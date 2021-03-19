@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  zerotier-one:
+    container_name: ztsp-zerotier-one
+    build:
+      context: https://github.com/zerotier/ZeroTierOne.git#1.6.3
+      dockerfile: ./ext/installfiles/linux/zerotier-containerized/Dockerfile
+    cap_add:
+    - NET_ADMIN
+    - SYS_ADMIN
+    devices:
+    - /dev/net/tun
+    volumes:
+    - ./zerotier-one-data:/var/lib/zerotier-one
+    expose:
+    - "9993"
+    ports:
+    - target: 9993
+      protocol: udp
+
+  zerotier-dns:
+    container_name: ztsp-zerotier-dns
+    image: mjenz/zerotier-dns@sha256:1a5a60611d53de719b3f6535d82da670e92f5c882e694f3973c44062fa05477b
+    depends_on:
+    - zerotier-one
+    volumes:
+    - ./zerotier-dns.yml:/app/zerotier-dns.yml:ro
+    network_mode: "service:zerotier-one"
+
+  coredns:
+    container_name: ztsp-coredns
+    image: coredns/coredns:1.8.3
+    depends_on:
+    - zerotier-dns
+    volumes:
+    - ./Corefile:/Corefile:ro
+    network_mode: "service:zerotier-one"

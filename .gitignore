@@ -1,0 +1,6 @@
+.idea/
+.vscode/
+zerotier-one-data/
+
+/Corefile
+/zerotier-dns.yml
